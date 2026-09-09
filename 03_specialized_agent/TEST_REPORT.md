@@ -44,7 +44,7 @@ Time:        0.345 s
 ```
 
 **Nombre de tests exécutés :** 16
-**Résultat final :** ✅ 16/16 tests passés (1 suite, 0 échec)
+**Résultat final :** 16/16 tests passés (1 suite, 0 échec)
 
 ## Respect du garde-fou "ne jamais modifier `/src`"
 
