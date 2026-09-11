@@ -2,7 +2,7 @@
   "inputs": [
     {
       "type": "promptString",
-      "id": "github-token-2",
+      "id": "github-token-4",
       "description": "Github Personal Access Token",
       "password": true
     }
@@ -12,7 +12,7 @@
       "command": "/usr/bin/env",
       "args": ["node", "/home/haitu/Holberton-Specialisation/holbertonschool-agentic-ai/05_sentinel/mcp_server.js"],
       "env": {
-        "GITHUB_TOKEN": "${input:github-token-2}"
+        "GITHUB_TOKEN": "${input:github-token-4}"
       }
     }
   }
