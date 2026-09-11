@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "crm-server": {
+      "command": "/usr/bin/env",
+      "args": ["node", "/home/haitu/Holberton-Specialisation/holbertonschool-agentic-ai/04_mcp/mcp_server.js"]
+    }
+  }
+}
