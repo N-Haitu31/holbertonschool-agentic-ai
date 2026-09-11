@@ -84,12 +84,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 		const response = await fetch(url, { headers });
 
 		if (!response.ok) {
+			let errorMessage = `GitHub API error (${response.status} ${response.statusText}).`;
+
+			if (response.status === 401) {
+				errorMessage =
+					"GitHub API error (401): the GITHUB_TOKEN is probably invalid or expired.";
+			} else if (response.status === 404) {
+				errorMessage =
+					"GitHub API error (404): the repository (repo) or owner is probably not found or misspelled.";
+			}
+
 			return {
 				isError: true,
 				content: [
 					{
 						type: "text",
-						text: `GitHub API error (${response.status} ${response.statusText}).`,
+						text: errorMessage,
 					},
 				],
 			};
