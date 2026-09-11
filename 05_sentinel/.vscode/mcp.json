@@ -1,0 +1,19 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "github-token-2",
+      "description": "Github Personal Access Token",
+      "password": true
+    }
+  ],
+  "servers": {
+    "github-ops": {
+      "command": "/usr/bin/env",
+      "args": ["node", "/home/haitu/Holberton-Specialisation/holbertonschool-agentic-ai/05_sentinel/mcp_server.js"],
+      "env": {
+        "GITHUB_TOKEN": "${input:github-token-2}"
+      }
+    }
+  }
+}
