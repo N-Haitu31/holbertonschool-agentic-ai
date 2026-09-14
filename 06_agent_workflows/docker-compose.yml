@@ -1,0 +1,4 @@
+services:
+  task-poller:
+    build: .
+    container_name: task-poller
