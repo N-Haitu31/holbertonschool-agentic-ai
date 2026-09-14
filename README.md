@@ -1,6 +1,6 @@
-# Agentic Ops — 5 Projects, Week 1
+# Agentic Ops — 6 Projects
 
-Five projects on Agentic Ops: understanding how LLMs actually work, engineering context for GitHub Copilot, forging a specialized agent with persistent memory, connecting Copilot to a real system via MCP, and finally building an autonomous agent end to end. Each folder is self-contained with its own deliverables and, where relevant, its own `package.json`/`node_modules`.
+Six projects on Agentic Ops: understanding how LLMs actually work, engineering context for GitHub Copilot, forging a specialized agent with persistent memory, connecting Copilot to a real system via MCP, building an autonomous agent end to end, and finally orchestrating a full team of specialized agent personas. Each folder is self-contained with its own deliverables and, where relevant, its own `package.json`/`node_modules`.
 
 ## 01_llm_finops — Fondations LLM & FinOps
 
@@ -41,10 +41,18 @@ The capstone: zero starter kit, autonomous agent built from scratch. "Sentinel" 
 - **Task 2**: deliberately sabotaged the token to test error handling — distinct, actionable messages for 401 (invalid token) vs. 404 (repo not found), verified the server never crashes.
 - **Task 3**: full autonomous run — one prompt, and the agent fetched live issues from `microsoft/vscode` and generated `index.html` / `app.js` / `style.css` from that real data, respecting every rule set in Task 0.
 
+## 06_agent_workflows — L'Équipe d'Agents & Workflows de Travail
+
+Recreating a traditional Product Owner / Dev / QA-DevSecOps team split as three separate, deliberately isolated Copilot personas, chained via a single source of truth instead of one mega-prompt doing everything.
+
+- **Task 0** (PO agent, `specifications.md`): `.github/PO-instructions.md` configures a persona forbidden from writing executable code; produces the SSOT specification (user stories + Gherkin acceptance criteria) for a `tasks.json` polling script, later consumed as-is by the Dev agent.
+- **Task 1** (Dev agent, `index.js` / `Dockerfile` / `docker-compose.yml`): `.github/DEV-instructions.md` configures a pure executor persona bound to `specifications.md` as its only source of truth (must stop and flag rather than invent on ambiguity). Verified end to end with a real `docker compose up --build` run.
+- **Task 2** (QA/DevSecOps agent, hardened `Dockerfile` / `docker-compose.yml`): `.github/QA-instructions.md` configures an adversarial security-auditor persona, explicitly barred from touching functional behavior. Found and patched 4 issues (root execution, unrestricted Linux capabilities/filesystem, unneeded network access, missing `.dockerignore`). **See `QA_REPORT.md`** for the live proof of this audit: a verbatim capture of the agent's own Faille/Risque/Correctif findings, the `git diff` proving `index.js` was never touched (non-regression), the runtime verification (`docker exec`/`docker inspect` confirming non-root/no-network/read-only in practice, not just declared in YAML), and a 3-state resilience test (`tasks.json` valid/missing/corrupted) confirming the process never crashes.
+
 ## Concepts covered
 
 Tokenization & LLM economics · Intent-Driven Development & semantic debt · Context window & Lost in the Middle · FIM & RAG local · R-C-T-C-F prompting · PRRF specialized agents · Company Skills standardization · External memory (MEMORY.md) · Model Context Protocol (Resources/Prompts/Tools) · Human-in-the-Loop · Zero Trust tool security · autonomous agent orchestration.
 
 ## Status
 
-All 5 projects complete, manual QA review requested.
+All 6 projects complete, manual QA review requested.

@@ -20,3 +20,5 @@ Pour chaque faille détectée, tu dois produire un compte-rendu structuré avant
 - **Correctif appliqué** : ce que tu as modifié pour la corriger.
 
 Applique directement les patchs via tes outils d'édition, mais toujours accompagnés de ce compte-rendu — jamais une correction silencieuse sans justification.
+
+Le compte-rendu complet de ton audit (chaque bloc Faille/Risque/Correctif, la preuve de non-régression, et toute vérification runtime que tu effectues) doit être consigné dans `QA_REPORT.md` à la racine du projet — c'est le fichier de preuve de ta mission, à ne jamais omettre ni laisser incomplet.
