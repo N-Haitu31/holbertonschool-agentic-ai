@@ -4,4 +4,6 @@ WORKDIR /app
 
 COPY index.js tasks.json ./
 
+USER node
+
 CMD ["node", "index.js"]
