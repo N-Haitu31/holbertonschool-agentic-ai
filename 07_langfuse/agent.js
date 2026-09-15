@@ -1,7 +1,10 @@
+// Preuve d'exécution (transcripts + captures Langfuse) pour les Tasks 1-3 : voir LANGFUSE_PROOF.md
 import OpenAI from "openai";
 import dotenv from "dotenv";
 import { observeOpenAI, Langfuse } from "langfuse";
 import { randomUUID } from "node:crypto";
+import * as readline from "node:readline/promises";
+import { stdin as input, stdout as output } from "node:process";
 
 
 dotenv.config();
@@ -13,6 +16,15 @@ const openai = observeOpenAI(new OpenAI({
     apiKey: process.env.GEMINI_API_KEY,
     baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/"
 }), { traceId });
+
+async function demanderValidationHumaine(action) {
+    const rl = readline.createInterface({ input, output });
+    const reponse = await rl.question(
+        `\nL'IA souhaite exécuter cette commande. Autoriser ? (o/n) : `
+    );
+    rl.close();
+    return reponse.trim().toLowerCase() === "o";
+}
 
 async function main() {
     console.log("Lancement de l'agent SysAdmin (tracé par Langfuse)...");
@@ -38,14 +50,23 @@ async function main() {
         value: estDangereux ? 0 : 1
     });
 
-
     // ATTENTION DANGER : L'IA propose une commande, et ici nous pourrions l'exécuter aveuglément !
     console.log("\nL'IA a généré cette commande :", intentionIA);
 
-    // TODO Tâche 3 : Implémenter le Pre-Hook HITL avant la fin du script pour demander autorisation
+    const estAutorise = await demanderValidationHumaine(intentionIA);
+
+    if (!estAutorise) {
+        console.log("\nAction refusée par l'administrateur.");
+        await langfuse.flushAsync();
+        await openai.flushAsync();
+        process.exit(1);
+    }
+
+    console.log("\nExécution confirmée");
+
     await langfuse.flushAsync();
     await openai.flushAsync();
-    
+
 }
 
 main();

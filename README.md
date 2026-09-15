@@ -1,6 +1,6 @@
-# Agentic Ops — 6 Projects
+# Agentic Ops — 7 Projects
 
-Six projects on Agentic Ops: understanding how LLMs actually work, engineering context for GitHub Copilot, forging a specialized agent with persistent memory, connecting Copilot to a real system via MCP, building an autonomous agent end to end, and finally orchestrating a full team of specialized agent personas. Each folder is self-contained with its own deliverables and, where relevant, its own `package.json`/`node_modules`.
+Seven projects on Agentic Ops: understanding how LLMs actually work, engineering context for GitHub Copilot, forging a specialized agent with persistent memory, connecting Copilot to a real system via MCP, building an autonomous agent end to end, orchestrating a full team of specialized agent personas, and finally instrumenting an agent with real observability (Langfuse) and governance hooks. Each folder is self-contained with its own deliverables and, where relevant, its own `package.json`/`node_modules`.
 
 ## 01_llm_finops — Fondations LLM & FinOps
 
@@ -49,10 +49,21 @@ Recreating a traditional Product Owner / Dev / QA-DevSecOps team split as three 
 - **Task 1** (Dev agent, `index.js` / `Dockerfile` / `docker-compose.yml`): `.github/DEV-instructions.md` configures a pure executor persona bound to `specifications.md` as its only source of truth (must stop and flag rather than invent on ambiguity). Verified end to end with a real `docker compose up --build` run.
 - **Task 2** (QA/DevSecOps agent, hardened `Dockerfile` / `docker-compose.yml`): `.github/QA-instructions.md` configures an adversarial security-auditor persona, explicitly barred from touching functional behavior. Found and patched 4 issues (root execution, unrestricted Linux capabilities/filesystem, unneeded network access, missing `.dockerignore`). **See `QA_REPORT.md`** for the live proof of this audit: a verbatim capture of the agent's own Faille/Risque/Correctif findings, the `git diff` proving `index.js` was never touched (non-regression), the runtime verification (`docker exec`/`docker inspect` confirming non-root/no-network/read-only in practice, not just declared in YAML), and a 3-state resilience test (`tasks.json` valid/missing/corrupted) confirming the process never crashes.
 
+## 07_langfuse — Agentic Ops, FinOps & Langfuse (La Tour de Contrôle)
+
+Instrumenting a raw Node.js SysAdmin agent script with real LLM observability (Langfuse) and governance hooks — the difference between an agent that just runs and one that can be audited, cost-tracked, and stopped before it does something destructive.
+
+- **Task 0**: created a dedicated Langfuse Cloud project (`Agentic-Ops-TP7`) and generated its API keys.
+- **Task 1** (`agent.js`, `package.json`, `.gitignore`): wrapped the OpenAI client with Langfuse's `observeOpenAI`, with an explicit `traceId` and `await openai.flushAsync()` before exit (a short-lived script would otherwise terminate before the batched trace is actually sent — verified independently via the Langfuse public API, since the dashboard has a ~10 minute display lag on this SDK version).
+- **Task 2** (`agent.js`): Post-Hook — a FinOps console alert when `total_tokens` exceeds 150, and a `langfuse.score()` call (`securite_commande`, 0 or 1) rating whether the model's proposed command contains `rm -rf`, confirmed attached to the correct trace via the API.
+- **Task 3** (`agent.js`): Pre-Hook Human-in-the-Loop — a `readline/promises`-based prompt asking explicit authorization before considering the AI's proposed command "executed"; refusal exits via `process.exit(1)`, acceptance logs confirmation — both branches flush pending Langfuse telemetry *before* exiting, verified on both paths.
+
+**See `LANGFUSE_PROOF.md`** for the full evidence trail across all three tasks: terminal transcripts, matching Langfuse trace screenshots (prompt/response/token usage/cost/score), and the API-based verification used to work around the dashboard's ingestion delay.
+
 ## Concepts covered
 
-Tokenization & LLM economics · Intent-Driven Development & semantic debt · Context window & Lost in the Middle · FIM & RAG local · R-C-T-C-F prompting · PRRF specialized agents · Company Skills standardization · External memory (MEMORY.md) · Model Context Protocol (Resources/Prompts/Tools) · Human-in-the-Loop · Zero Trust tool security · autonomous agent orchestration.
+Tokenization & LLM economics · Intent-Driven Development & semantic debt · Context window & Lost in the Middle · FIM & RAG local · R-C-T-C-F prompting · PRRF specialized agents · Company Skills standardization · External memory (MEMORY.md) · Model Context Protocol (Resources/Prompts/Tools) · Human-in-the-Loop · Zero Trust tool security · autonomous agent orchestration · LLM observability & tracing · FinOps/tokenomics · Pre-Hook/Post-Hook governance.
 
 ## Status
 
-All 6 projects complete, manual QA review requested.
+All 7 projects complete, manual QA review requested.
