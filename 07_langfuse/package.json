@@ -1,0 +1,13 @@
+{
+  "name": "agentic-ops-tp7",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "langfuse": "^3.0.0",
+    "openai": "^4.0.0"
+  }
+}
