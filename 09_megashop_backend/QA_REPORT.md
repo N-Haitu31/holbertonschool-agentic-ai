@@ -42,3 +42,73 @@ $ docker logs <container>
 ```
 
 Comportement fonctionnel identique à avant le patch, désormais exécuté en non-root.
+
+---
+
+# Sprint 2 — Le Worker Asynchrone
+
+## Faille 2 — Aucune résilience si Redis n'est pas disponible au démarrage
+
+- **Faille détectée** : la première version de `server.js`/`worker.js` faisait `createClient(...).connect()` une seule fois, sans gestion d'échec. Reproduit en réel en pointant `REDIS_URL` vers un port sans rien derrière :
+  ```
+  $ REDIS_URL=redis://127.0.0.1:59999 node server.js
+  ConnectionTimeoutError: Connection timeout
+  ...
+  Node.js v20.20.2
+  $ echo $?
+  1
+  ```
+  Le process crashe (rejet de promesse non intercepté) après le timeout de connexion (~5s), sans aucune tentative de reconnexion.
+
+- **Risque** : dans un environnement Docker Compose réel, l'ordre de démarrage des conteneurs n'implique pas que le service interne de Redis soit déjà prêt à accepter des connexions (un simple `depends_on: - redis` en liste n'attend que le démarrage du conteneur, pas la disponibilité du serveur Redis dedans). N'importe quel démarrage un peu lent (image froide, disque chargé, ou un simple redémarrage de Redis en production) provoque un crash définitif de l'App et du Worker, sans redémarrage automatique ni alerte claire — panne totale de la réception et du traitement des paiements.
+
+- **Correctif appliqué** : deux mécanismes complémentaires, volontairement redondants ("belt-and-suspenders") car ils couvrent des cas différents :
+
+  1. **Retry applicatif** (`queue.js`, fonction `connectQueueWithRetry`) : recrée un nouveau client Redis à chaque tentative (un client dont le `connect()` a échoué renvoie `Socket already opened` si on le réutilise tel quel — vérifié en réel), avec un délai fixe de 2 secondes entre chaque essai, retenté indéfiniment, chaque échec étant journalisé. Ce mécanisme protège aussi contre une coupure Redis **après** le démarrage (ex : redémarrage de Redis en production), un cas que `depends_on` ne couvre jamais puisqu'il ne s'applique qu'au lancement des conteneurs.
+  2. **Healthcheck Redis + `depends_on: condition: service_healthy`** (`docker-compose.yml`) : le service `redis` expose un healthcheck (`redis-cli ping`), et `app`/`worker` déclarent `depends_on: redis: condition: service_healthy` — Docker Compose ne démarre plus ces deux services tant que Redis n'a pas répondu positivement à son ping. Ceci évite l'essentiel des cas de course au démarrage dans le contexte normal d'un `docker compose up`.
+
+- **Preuve — reconnexion automatique sans intervention manuelle** : conteneur `app` démarré volontairement en contournant `depends_on` (`docker compose up -d --no-deps app`), Redis totalement arrêté :
+  ```
+  $ docker compose ps app
+  09_megashop_backend-app-1   Up 13 seconds
+  $ docker compose logs app
+  [queue] connection to Redis failed (getaddrinfo ENOTFOUND redis), retrying in 2000ms...
+  [queue] connection to Redis failed (getaddrinfo ENOTFOUND redis), retrying in 2000ms...
+  ... (répété toutes les 2s, conteneur toujours "Up", pas de crash)
+  ```
+  Puis démarrage de Redis sans toucher au conteneur `app` :
+  ```
+  $ docker compose up -d redis
+  $ docker compose logs app
+  ... (dernières tentatives échouées)
+  [payment-webhook] listening on port 3000
+  $ curl -X POST http://localhost:3000/webhooks/payment -d '{"transactionId":"tx_e2e_02"}'
+  webhook still works: 200
+  ```
+  L'App s'est reconnectée et a servi une requête sans redémarrage manuel du conteneur.
+
+## Vérification bout-en-bout du pipeline asynchrone
+
+Stack complète démarrée avec `docker compose up --build -d` (healthcheck + `condition: service_healthy` en place) :
+```
+Container redis-1  Healthy
+Container app-1     Started   (après redis Healthy)
+Container worker-1  Started   (après redis Healthy)
+```
+Notification réelle envoyée :
+```
+$ curl -X POST http://localhost:3000/webhooks/payment -d '{"transactionId":"tx_e2e_01","amount":1200,"currency":"EUR"}'
+→ 200
+```
+Logs du Worker :
+```
+[worker] processing transaction: { transactionId: 'tx_e2e_01', amount: 1200, currency: 'EUR' }
+[worker] AI analysis: Cette notification est **suspecte** car l'identifiant de transaction (tx_e2e_01) évoque un test de bout en bout...
+```
+Trace confirmée côté Langfuse via l'API publique (`GET /api/public/traces`) : un nouvel enregistrement `OpenAI.chat` apparaît avec l'horodatage exact de l'appel, prouvant que `observeOpenAI` a bien exporté la trace du Worker.
+
+## Vérification complémentaire (Sprint 2)
+
+- **Dépendances** : `redis` (6.2.1), `openai` (4.104.0), `langfuse` (3.38.20), `dotenv` (16.6.1) — toutes en version exacte, pas de `^`/`~`. `npm audit --omit=dev` : 0 vulnérabilité.
+- **Image Docker** : le premier build de la Task 2 échouait au runtime (`Cannot find module './queue.js'` / `worker.js`) car le `Dockerfile` du Sprint 1 ne copiait que `server.js`. Corrigé en copiant explicitement `server.js worker.js queue.js`. Ce n'est pas une faille de sécurité mais un défaut fonctionnel bloquant, corrigé avant l'audit de résilience proprement dit (un correctif de sécurité n'a de sens que sur un service qui démarre).
+- **Non-régression** : suite de tests Sprint 1 relancée après le refactor de la connexion Redis (`connectQueueWithRetry`) — 6/6 toujours verts, aucun changement de comportement métier.

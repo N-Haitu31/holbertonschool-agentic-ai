@@ -5,9 +5,14 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "worker": "node worker.js",
     "test": "node --test"
   },
   "dependencies": {
-    "express": "5.2.1"
+    "express": "5.2.1",
+    "redis": "6.2.1",
+    "openai": "4.104.0",
+    "langfuse": "3.38.20",
+    "dotenv": "16.6.1"
   }
 }
