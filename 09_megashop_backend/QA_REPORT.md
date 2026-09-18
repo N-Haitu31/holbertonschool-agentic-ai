@@ -21,12 +21,7 @@ Audit de sécurité et de robustesse mené sur `server.js`, `Dockerfile` et
 
 ## Non-régression
 
-Aucune modification n'a porté sur `server.js` ni sur la logique métier — seul le `Dockerfile` a été modifié (ajout de `USER node`). Preuve :
-
-```
-$ git diff --stat -- server.js tests/
-(aucune sortie — fichiers inchangés depuis le commit du Sprint 1)
-```
+Aucune modification n'a porté sur `server.js` ni sur la logique métier — seul le `Dockerfile` a été modifié (ajout de `USER node`). Le Dev et le patch QA de ce sprint ont été committés en un seul commit (`b8f2c00`, pas de commit intermédiaire avant/après le patch), donc un `git diff` entre deux états internes au Sprint 1 n'existe pas. Preuve réelle disponible à la place : pendant la phase d'audit, le seul outil d'édition utilisé a ciblé `Dockerfile` — ni `server.js` ni `tests/payment-webhook.test.js` n'ont été ouverts ou modifiés durant cette phase.
 
 ## Vérification runtime finale
 
@@ -112,3 +107,28 @@ Trace confirmée côté Langfuse via l'API publique (`GET /api/public/traces`) :
 - **Dépendances** : `redis` (6.2.1), `openai` (4.104.0), `langfuse` (3.38.20), `dotenv` (16.6.1) — toutes en version exacte, pas de `^`/`~`. `npm audit --omit=dev` : 0 vulnérabilité.
 - **Image Docker** : le premier build de la Task 2 échouait au runtime (`Cannot find module './queue.js'` / `worker.js`) car le `Dockerfile` du Sprint 1 ne copiait que `server.js`. Corrigé en copiant explicitement `server.js worker.js queue.js`. Ce n'est pas une faille de sécurité mais un défaut fonctionnel bloquant, corrigé avant l'audit de résilience proprement dit (un correctif de sécurité n'a de sens que sur un service qui démarre).
 - **Non-régression** : suite de tests Sprint 1 relancée après le refactor de la connexion Redis (`connectQueueWithRetry`) — 6/6 toujours verts, aucun changement de comportement métier.
+- **Diff réel entre Sprint 1 et Sprint 2** (`git diff b8f2c00 679b0ca -- server.js`, commits réels du repo) confirme que le refactor est scopé exactement à l'attendu — passage à une factory `createApp(queueClient)`, ajout de `queueClient.lPush(...)` dans le handler, aucun changement de la logique de réponse `200`/`400` elle-même (le middleware d'erreur JSON est déplacé dans la factory mais son contenu est identique) :
+  ```diff
+  -const app = express();
+  -app.use(express.json());
+  +const QUEUE_KEY = 'payment-notifications';
+  +
+  +function createApp(queueClient) {
+  +  const app = express();
+  +  app.use(express.json());
+
+  -app.post('/webhooks/payment', (req, res) => {
+  -  console.log('[payment-webhook] notification received:', JSON.stringify(req.body));
+  -  res.sendStatus(200);
+  -});
+  +  app.post('/webhooks/payment', async (req, res) => {
+  +    console.log('[payment-webhook] notification received:', JSON.stringify(req.body));
+  +    await queueClient.lPush(QUEUE_KEY, JSON.stringify(req.body));
+  +    res.sendStatus(200);
+  +  });
+  ```
+- **Privilèges du conteneur `worker`** : la Faille 1 (Sprint 1) n'avait été vérifiée que sur le conteneur `app`. Revérifié explicitement sur `worker`, qui partage la même image (`Dockerfile` avec `USER node`) :
+  ```
+  $ docker compose exec worker id
+  uid=1000(node) gid=1000(node) groups=1000(node),1000(node)
+  ```
