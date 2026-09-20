@@ -1,0 +1,16 @@
+[
+  {
+    "id": "21b37d1d-258a-45f4-8256-fae49d421b53",
+    "traceId": "360f7301-cb7a-4af8-9036-ca4f5e1a29d4",
+    "timestamp": "2026-09-18T09:20:49.636Z",
+    "name": "validation_humaine_remboursement",
+    "value": 0
+  },
+  {
+    "id": "2d8851b0-1e5d-4efc-bf41-9fa0346dc8b9",
+    "traceId": "92702055-f219-48de-854f-e58bb3dc595a",
+    "timestamp": "2026-09-18T09:20:12.213Z",
+    "name": "validation_humaine_remboursement",
+    "value": 1
+  }
+]

@@ -1,0 +1,258 @@
+[
+  {
+    "id": "87ff1762-7bb5-41f9-bece-5bc64e895e17",
+    "timestamp": "2026-09-18T08:44:27.370Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Analyse cette notification de paiement et donne, en une phrase courte, ton verdict (normale ou suspecte) avec une brève justification : {\"transactionId\":\"tx_e2e_03\",\"amount\":950,\"currency\":\"EUR\"}"
+        }
+      ]
+    },
+    "output": {
+      "content": "Cette notification est **normale**, car les données sont correctement structurées avec un montant et une devise (EUR) parfaitement valides.",
+      "extra_content": {
+        "google": {
+          "thought_signature": "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"
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.00014475,
+    "latency": 4.8
+  },
+  {
+    "id": "1a98d8d5-6165-48d1-9981-5f84f1570766",
+    "timestamp": "2026-09-18T09:14:10.957Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Analyse cette notification de paiement et donne, en une phrase courte, ton verdict (normale ou suspecte) avec une brève justification : {\"transactionId\":\"tx_refund_ok\",\"amount\":300,\"currency\":\"EUR\",\"status\":\"refund\"}"
+        }
+      ]
+    },
+    "output": {
+      "content": "Cette notification est **normale**, car les données (identifiant, montant, devise et statut) sont cohérentes et correspondent à une procédure de remboursement standard.",
+      "extra_content": {
+        "google": {
+          "thought_signature": "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"
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.0001605,
+    "latency": 4.273
+  },
+  {
+    "id": "ac3e0794-3933-4a11-b3fc-4601405a6f7b",
+    "timestamp": "2026-09-18T09:16:06.923Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Analyse cette notification de paiement et donne, en une phrase courte, ton verdict (normale ou suspecte) avec une brève justification : {\"transactionId\":\"tx_refund_retry\",\"amount\":300,\"currency\":\"EUR\",\"status\":\"refund\"}"
+        }
+      ]
+    },
+    "output": {
+      "content": "Cette notification est **normale** car les données sont parfaitement cohérentes et le statut correspond bien à une opération de remboursement.",
+      "extra_content": {
+        "google": {
+          "thought_signature": "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"
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.00013425,
+    "latency": 4.043
+  },
+  {
+    "id": "a4af4cbe-0fb9-44c3-bfe6-e3aa2f1f6be6",
+    "timestamp": "2026-09-18T09:18:27.265Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "dis juste OK"
+        }
+      ]
+    },
+    "output": {
+      "content": "OK",
+      "extra_content": {
+        "google": {
+          "thought_signature": "EsQECsEEAWkUfRN2kx2pHF2PsRL+qGgGfMPXYkBRdfeX05n/8ZeDaTesCzXeWZJ4+L/TK+P+j5OfzaO5/r20GkNu918KKB9esoUqb4GmxOgREohfNW21H+7lWgUXu7wfZgivy2epchxdQEfVUj1SunfWC2HF+RB/CMWd//GNw2T0gS4zpm65qID8QJ9wz0JVzKXk9Jx3w9667jlJtIwadzH0TJ60O5GaOiQ3yXvtkd1mZaKtIogPotxtwEaaHRIx/Dw69kB7ayCbi64SY9i3udB9CJ9RaYxNKY9K+G6FOPP4VLyMwrEuI7pljp/hFEULUZ6WCceaoS1nHG1Ub6N5Zjed4vpthpzIbXtRZz0sRV07CXTEXFsBOMCuMlrOQeRFgPIO3RUJa+KX5DfHzueA0PhNTtKvlpak+7BtJEgVEbi97JxIDqQPtws59XjbQO7AaV9ASQxpQj5ehhr96nHucM+OKgNPJ8/CkK8EGCt6vy4dby8iew550FlI8RNxWarRu4DNNXGvOacY+zMc9WW/O6B45vMMoA9S2BVkbWFRo+4/qeGJwTwDieuH2YCr1MkRsm2211xk1rQQ9OwxPi61HYjfJZXAa+Ip3hsDhjBDKBcbh3Joc1ztFeqlYryflxqccntNF04LhVgvyJkGpZO8mXpaaFmxiTuw/+p4DO0qu5o9++ekE1vMH/2gtNYWtZIJzC1RGm1R+WY6uTBi/Y5lWXBq+SwqCS4zaF30cNqdSvF6mGOqBEpyhjTplRhSA2EYedwbcjxwBQ=="
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.00000675,
+    "latency": 1.992
+  },
+  {
+    "id": "7d1ef0af-a043-4b72-8b67-4417fd610924",
+    "timestamp": "2026-09-18T09:19:00.043Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "dis juste OK"
+        }
+      ]
+    },
+    "output": {
+      "content": "OK",
+      "extra_content": {
+        "google": {
+          "thought_signature": "EsUECsIEAWkUfRPmgfNkkZGrsw29l7+zNLAH0k3kOS1pjHOy2oz9g3OsSaSICsE7I0haXRff9S+OZ4vDd+GAVvmCJe5DKnlwJnKwvj9P2BI65Ri1Miko74Q0VGuAcw36Nqlu5xxch/WE85so2Nl2hWKYKXLP3wTgM7QMtg+mIeraivpC8c4StjGq430/SuYrW4/jbCg/OMzWKstzGqrv1t1yRTpKDBjsesixpjpQ88TEPeuEfoxN1V5tWOPqi3mreBl86+qVlxYAS4kfj4e5Hu85KZRRjL5tbDHx+a+StRv4mbny0GRQYt5VoVhb8Fjrq32YIzYUpKAqku9O9Qkwwaq6iNBeyizI+cI0ZdnhEYvmHbzAJyGUStSgmHXy6dYSJlnhojWOcFXTdcnmhmb2/BLalnRcyITDd8uDzPVLdQAzqV8D4OiC72SqBKRW1KUhOOSGIgz6GsIjtk97/mTrTYJelj3zjn2I11KClq5td0ze5LoAqwR10+r1LQcN1nLdY+MhL4Zu+7a58pya/lvVArLSBQdxtLkNaI+jBWje5SBsaNCbyd4OOWQQv/tRFxVNwedx1Gsn6GRjC2ZYPPydFIMr5bEe2FCbrUy4/jnPWxYY+BqbYvIRexHMRqT8qIyLIXYbK8BC5+qhEwJ6oC4wfLJKeitOCVlViQFaRuqyGSTcI60wOvGtUM20BjcZscccDJ70/h9HN9r8pK1Br4caoXlN6r+3SGJbWsJa5HFHt/ThkaiLvN1YNPTvfQUfQ9Xi2GoEJWZux8U="
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.00000675,
+    "latency": 2.872
+  },
+  {
+    "id": "92702055-f219-48de-854f-e58bb3dc595a",
+    "timestamp": "2026-09-18T09:20:00.346Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Analyse cette notification de paiement et donne, en une phrase courte, ton verdict (normale ou suspecte) avec une brève justification : {\"transactionId\":\"tx_refund_accepted\",\"amount\":500,\"currency\":\"EUR\",\"status\":\"refund\"}"
+        }
+      ]
+    },
+    "output": {
+      "content": "Cette notification est **normale** car les données sont cohérentes et le statut « refund » correspond parfaitement à l'identifiant de la transaction.",
+      "extra_content": {
+        "google": {
+          "thought_signature": "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"
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.000153,
+    "latency": 3.713
+  },
+  {
+    "id": "360f7301-cb7a-4af8-9036-ca4f5e1a29d4",
+    "timestamp": "2026-09-18T09:20:44.575Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Analyse cette notification de paiement et donne, en une phrase courte, ton verdict (normale ou suspecte) avec une brève justification : {\"transactionId\":\"tx_refund_refused\",\"amount\":700,\"currency\":\"EUR\",\"status\":\"refund\"}"
+        }
+      ]
+    },
+    "output": {
+      "content": "Cette notification est **suspecte** en raison de la contradiction directe entre l'identifiant indiquant un refus de remboursement (`tx_refund_refused`) et le statut affiché comme remboursé (`refund`).",
+      "extra_content": {
+        "google": {
+          "thought_signature": "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"
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.00020625,
+    "latency": 4.719
+  },
+  {
+    "id": "0a2edd88-b352-4c04-9763-0a8fd030be84",
+    "timestamp": "2026-09-18T09:21:21.190Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Analyse cette notification de paiement et donne, en une phrase courte, ton verdict (normale ou suspecte) avec une brève justification : {\"transactionId\":\"tx_normal_01\",\"amount\":80,\"currency\":\"EUR\",\"status\":\"success\"}"
+        }
+      ]
+    },
+    "output": null,
+    "totalCost": 0,
+    "latency": 0
+  },
+  {
+    "id": "b9bd241e-e1fb-43a3-ad1b-e967bb1cf040",
+    "timestamp": "2026-09-18T09:23:43.061Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "dis juste OK"
+        }
+      ]
+    },
+    "output": {
+      "content": "OK",
+      "extra_content": {
+        "google": {
+          "thought_signature": "EvcCCvQCAWkUfROpyVzUBghCtrRIAZuTsLICrxzgBNxAcClIfNthMjVfRx0XnJ7jNtu7dzwf3lB+7D/jUEw0q1EpESFB+N+eLPFHf5sxAilN7MIoPT32Wi1SSewNrexuSWB94EFD60MnoKZ5l93hPs4gLPBPJWfZBpwR3sSSSj22rH+4VHcphqrUvrWeHkIIKyrucotR6H+xpnTTaboKtT3mi3T8ztvT4GoShTUKTfJrhWLZ0q6G5mvXMGOS7pzruiwVthbcZHkC6YHiJdjdvZkh3h8XK5MssJS67dJHTqozaffsn+qGST2FbbyuKWSWHR64t12Ge5sg8kd5pFxTY2sBNLtIDA5WXvYJ/fVVAknor66BwswJPuIqWFRqxmTdwd35F2ogL6RZqTixhcpmJ5OIdYQQC15+YXD2i/hHiRepoNlF1fRqFPDMtKVorB48cZG5w+jDs+ecLTqbkVws7yXQS/MMFaDWrLCRYJQ3WS+PIO5LaxUUSkqa"
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.00000675,
+    "latency": 1.811
+  },
+  {
+    "id": "a058003a-9417-4d99-bdea-cac10ab53327",
+    "timestamp": "2026-09-18T09:24:04.998Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "dis juste OK"
+        }
+      ]
+    },
+    "output": {
+      "content": "OK",
+      "extra_content": {
+        "google": {
+          "thought_signature": "EtUDCtIDAWkUfRP+ur6GDJEvZKSZMmSTVPyE/d3MKxGQ37J1LynnAwe3PgOVdxvb1/OMfdyCXpgHNxa74fd50cHye2f1fceN6sa5vv6JK6Z9oC0RGKYG9DNUo3ZJxRxcISFX5+ofYnao+N/ufQ4e2jW0sVto58RsyQ6gTtnPgz81mM2PWwsqetmNRrTc7HJhOqVWQ9O4QL5607zUhoCxWLsuu2IcUbB8rzMmIoLSM5330A66WObEo19/4p01/iksJ4y7kb8DCSVdv2xajmEBmO4YQQajXlaoJuOkYJeq1rtd6U+yzDjKlCQlG1HbA4OfMlHEjL0OMptjfYXAma4E4N/p5BwvsaHBCctHUVNVpuvkSKHlAzNoI1TenFkrYAPYIwWGL+mwrr5MsEv+fgh/IoL3S1TkZoeNGayF5DUWMCotKCYzYRejB57rlYo6dacDoBCH/JV7PBNvPil7fz7sX8gQh4NoeuypgZU6uQHEXDiWbFpATgcG101wl1miDi2I4EgnRUVWft7gd1K6U8nfiFYJOuFxVHEo1DFc435J5I37O7rmMxHl/YlNuICf5PJgo5nBgnoinUdnxtGsDWOUQnQEa3H3FQF6/tQBb8yXUnCy6/Ge2zjpYg=="
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.00000675,
+    "latency": 2.446
+  },
+  {
+    "id": "aad6070b-be02-4972-9cdc-ae9e46f4468a",
+    "timestamp": "2026-09-18T09:24:23.630Z",
+    "name": "OpenAI.chat",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "Analyse cette notification de paiement et donne, en une phrase courte, ton verdict (normale ou suspecte) avec une brève justification : {\"transactionId\":\"tx_normal_02\",\"amount\":80,\"currency\":\"EUR\",\"status\":\"success\"}"
+        }
+      ]
+    },
+    "output": {
+      "content": "Cette notification est **normale**, car tous les paramètres (montant usuel, devise EUR et statut de succès) sont parfaitement cohérents et ne présentent aucune anomalie.",
+      "extra_content": {
+        "google": {
+          "thought_signature": "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"
+        }
+      },
+      "role": "assistant"
+    },
+    "totalCost": 0.00017175,
+    "latency": 8.578
+  }
+]
