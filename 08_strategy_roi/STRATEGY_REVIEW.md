@@ -18,7 +18,7 @@ La file asynchrone pour le paiement bancaire. C'est le bon arbitrage : une inté
 
 ## 4. Un choix IA que j'ai corrigé
 
-Dans le diagramme Mermaid initial, la flèche Redis → Cart portait le label *"fallback si DB principale indisponible"*. En relisant l'ADR en parallèle, j'ai constaté une incohérence : l'ADR décrit Redis comme le **chemin principal** du panier (c'est lui qui absorbe le <50ms), Postgres n'intervenant qu'en source de vérité de secours — pas l'inverse. Le label du diagramme inversait donc le rôle réel des deux systèmes. Je l'ai corrigé pour refléter fidèlement l'ADR. C'est un rappel utile : un diagramme généré par IA peut être visuellement cohérent tout en contredisant sa propre justification écrite si personne ne les confronte l'un à l'autre.
+Dans le diagramme Mermaid initial, la flèche Redis → Cart portait le label *"fallback si DB principale indisponible"*. En relisant l'ADR en parallèle, j'ai constaté une incohérence : l'ADR décrit Redis comme le **chemin principal** du panier (c'est lui qui absorbe le <50ms), Postgres assurant en arrière-plan la durabilité, comme source de vérité durable — pas l'inverse. Le label du diagramme inversait donc le rôle réel des deux systèmes. Je l'ai corrigé pour refléter fidèlement l'ADR. C'est un rappel utile : un diagramme généré par IA peut être visuellement cohérent tout en contredisant sa propre justification écrite si personne ne les confronte l'un à l'autre.
 
 ## 5. Compromis assumés
 

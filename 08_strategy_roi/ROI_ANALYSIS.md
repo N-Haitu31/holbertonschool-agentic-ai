@@ -7,6 +7,6 @@ Sur les trois tâches auditées, le coût classique cumulé s'élève à 4 800 �
 - **Refactoring Legacy** : 2 400 € → 625 € (économie 1 775 €), temps dev réduit de 40h à 10h.
 Le coût des Tokens Agent (2,50 € à 25 € par tâche) est négligeable face au temps humain libéré — jusqu'à 30h récupérées sur le seul refactoring, réaffectables à des tâches à plus forte valeur.
  
-Pour une équipe de 5 développeurs traitant un volume comparable chaque mois, l'investissement en licences/API s'amortit dès la première tâche : le ratio économie/coût-tokens dépasse 25x, et atteint 70x sur le refactoring.
+Pour une équipe de 5 développeurs traitant un volume comparable chaque mois, l'investissement en licences/API s'amortit dès la première tâche : le ratio économie/coût-tokens dépasse 53x sur la tâche la moins rentable (Migration BDD), et atteint 559x sur l'authentification.
  
 **Recommandation** : valider l'investissement — le risque financier est négligeable face au gain de productivité mesuré.
