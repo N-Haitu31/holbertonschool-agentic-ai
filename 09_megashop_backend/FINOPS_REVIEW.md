@@ -23,6 +23,15 @@ Le coût **attribuable à l'application elle-même** (celui qui compte pour
 une revue FinOps de production) est donc **$0.0009705** sur l'ensemble
 des Sprints 1 à 3.
 
+**Périmètre de cette revue** : les exports et les captures ci-dessous
+figent l'état du projet Langfuse au 2026-09-18 (Sprints 1 à 3, tests
+automatisés), soit 11 traces. Un essai manuel interactif du Sprint 3,
+réalisé le 2026-09-20 (voir `PROOF.md`), a ajouté ensuite 2 traces
+d'analyse (`9dbf12ce…` : $0.0002205, `78d3bafc…` : $0.00020925) et 2 scores
+HITL (`1` et `0`) : +$0.00042975, soit un total projet de **$0.00142725**
+(13 traces), toujours négligeable. Ces 2 traces ne figurent pas dans les
+fichiers d'export ni sur les captures, qui restent cohérents entre eux.
+
 ## Vérification visuelle dans le dashboard Langfuse
 
 Le **Langfuse Cost Dashboard** (plage "Past 7 days", projet

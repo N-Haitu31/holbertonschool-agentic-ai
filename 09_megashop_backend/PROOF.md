@@ -306,14 +306,61 @@ $ docker compose run --rm worker
 (aucune demande de confirmation — comportement attendu)
 ```
 
-_Note méthodologique_ : ces trois runs ont été automatisés en pipant la
-réponse (`o`/`n`) dans `docker compose run -T --rm worker`, faute de vrai
-terminal interactif dans cet environnement d'exécution. Ça prouve que le
-mécanisme fonctionne de bout en bout dans Docker, mais **un vrai essai
-manuel, en tapant `o`/`n` toi-même dans un terminal**, reste à faire pour
-la preuve la plus authentique (comme au Sprint 3 de `07_langfuse` où
-c'était toi qui tapais la réponse) — capture le transcript complet et je
-l'ajoute ici.
+_Note méthodologique_ : ces trois runs ont été automatisés en envoyant la
+réponse (`o`/`n`) par pipe dans `docker compose run -T --rm worker`, sans
+terminal interactif. Ils valident la chaîne complète dans Docker (lecture
+de stdin par `readline/promises`, décision, annulation ou application,
+score Langfuse) mais ne remplacent pas une saisie humaine réelle dans un
+terminal — voir la section suivante.
+
+### Essai manuel interactif — saisie humaine réelle (2026-09-20)
+
+Stack démarrée avec `docker compose up -d redis app`. Deux notifications
+`status: "refund"` envoyées au webhook, puis un Worker lancé dans un vrai
+terminal avec `docker compose run --rm worker` (pseudo-TTY alloué, sans `-T`).
+Les réponses `o` puis `n` ont été **tapées à la main** au prompt. Le second
+job a été envoyé depuis un autre terminal pendant que le même Worker
+attendait déjà en boucle :
+
+```
+$ docker compose run --rm worker
+[worker] connected to Redis, waiting for payment notifications...
+[worker] processing transaction: {
+  transactionId: 'tx_manual_o',
+  amount: 100,
+  currency: 'EUR',
+  status: 'refund'
+}
+[worker] AI analysis: Cette notification est **suspecte** car l'identifiant de transaction (« tx_manual_o ») évoque un processus manuel non standard, ce qui constitue un risque d'anomalie ou de fraude sur ce remboursement.
+
+[worker] Remboursement demandé pour la transaction tx_manual_o. Confirmer ? (o/n) : o
+[worker] remboursement autorisé par l'humain pour tx_manual_o.
+[worker] order status updated: transactionId=tx_manual_o status=Remboursé
+[worker] processing transaction: {
+  transactionId: 'tx_manual_n',
+  amount: 200,
+  currency: 'EUR',
+  status: 'refund'
+}
+[worker] AI analysis: Cette notification est **suspecte** car l'identifiant de transaction (« tx_manual_n ») ne semble pas être un identifiant unique automatique standard et suggère une saisie manuelle ou un test.
+
+[worker] Remboursement demandé pour la transaction tx_manual_n. Confirmer ? (o/n) : n
+[worker] remboursement refusé par l'humain pour tx_manual_n — action annulée.
+```
+
+Scores correspondants vérifiés via l'API publique Langfuse, chacun rattaché
+à la trace de son analyse IA :
+
+```
+2026-09-20T08:43:37.628Z | 9dbf12ce-5dfe-4b11-a1e0-45ff6ee4651e | validation_humaine_remboursement = 1 | tx_manual_o
+2026-09-20T08:44:23.511Z | 78d3bafc-7283-45c6-974c-53272c049721 | validation_humaine_remboursement = 0 | tx_manual_n
+```
+
+Le Worker est resté bloqué sur le prompt tant que rien n'était saisi
+(suspension effective du traitement), puis a repris le job suivant sans
+redémarrage. `Ctrl+C` n'arrête pas ce conteneur (le process Node est le
+PID 1, Linux ignore le `SIGINT` dans ce cas, vérifié : le conteneur reste
+`Up` après un `SIGINT`) : il faut le supprimer avec `docker rm -f`.
 
 ### Score Langfuse rattaché à la trace du traitement concerné
 
@@ -329,8 +376,17 @@ $ curl -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" "$LANGFUSE_HOST/api/public
 Les deux `traceId` existent bien dans `/api/public/traces` (mêmes ID que
 les traces `OpenAI.chat` générées par l'analyse IA de ces deux
 transactions) — le score n'est pas orphelin, il est bien rattaché au bon
-traitement.
+traitement. Les deux scores figurent aussi dans `langfuse_scores_export.json`
+(export de la Task 4).
 
-**Capture d'écran du dashboard (à ajouter)** : ouvre l'une de ces deux
-traces dans Langfuse, onglet **Scores**, pour montrer le score
-`validation_humaine_remboursement` attaché visuellement à la trace.
+Vue **Scores** du dashboard Langfuse (projet `MegaShop-Backend`), montrant
+les deux décisions humaines enregistrées :
+
+![Langfuse Scores — validation_humaine_remboursement](./langfuse_scores_overview.png)
+
+- `2026-09-18 11:20:12` (heure locale, UTC+2) — valeur **`1.00`** : remboursement autorisé
+- `2026-09-18 11:20:49` (heure locale, UTC+2) — valeur **`0.00`** : remboursement refusé
+
+Ces horodatages correspondent à ceux renvoyés par l'API
+(`09:20:12` et `09:20:49` UTC), et chaque score est rattaché à sa trace
+d'analyse par le `traceId` cité plus haut.

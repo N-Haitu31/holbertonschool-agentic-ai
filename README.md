@@ -1,6 +1,6 @@
-# Agentic Ops — 7 Projects
+# Agentic Ops — 9 Projects
 
-Seven projects on Agentic Ops: understanding how LLMs actually work, engineering context for GitHub Copilot, forging a specialized agent with persistent memory, connecting Copilot to a real system via MCP, building an autonomous agent end to end, orchestrating a full team of specialized agent personas, and finally instrumenting an agent with real observability (Langfuse) and governance hooks. Each folder is self-contained with its own deliverables and, where relevant, its own `package.json`/`node_modules`.
+Nine projects on Agentic Ops: understanding how LLMs actually work, engineering context for GitHub Copilot, forging a specialized agent with persistent memory, connecting Copilot to a real system via MCP, building an autonomous agent end to end, orchestrating a full team of specialized agent personas, instrumenting an agent with real observability (Langfuse) and governance hooks, evaluating agentic work in terms of ROI and architecture, and finally a capstone that combines all of it into an auditable software factory. Each folder is self-contained with its own deliverables and, where relevant, its own `package.json`/`node_modules`.
 
 ## 01_llm_finops — Fondations LLM & FinOps
 
@@ -60,10 +60,32 @@ Instrumenting a raw Node.js SysAdmin agent script with real LLM observability (L
 
 **See `LANGFUSE_PROOF.md`** for the full evidence trail across all three tasks: terminal transcripts, matching Langfuse trace screenshots (prompt/response/token usage/cost/score), and the API-based verification used to work around the dashboard's ingestion delay.
 
+## 08_strategy_roi — Stratégie de Valeur, Écosystème & ROI
+
+A change of pace from coding: costing agentic work (TCO/ROI), mapping the orchestration ecosystem (CrewAI / AutoGen / LangGraph / BMAD), and using an LLM as a system-design sounding board rather than a code generator.
+
+- **Task 0** (`roi-simulator.csv`, `ROI_ANALYSIS.md`): filled the TCO table for three tasks from a formula reconstructed from the course's own worked example, then wrote an executive argument whose every figure traces back to a CSV row.
+- **Task 1** (`.github/ARCHITECT-instructions.md`, `architecture.md`, `ADR-001-databases.md`): a "Solution Architect" persona that never writes code, producing a Mermaid architecture (Redis hot path + Postgres source of truth, append-only audit log, asynchronous payment queue) and an ADR with at least one rejected alternative per component.
+- **Task 2** (`STRATEGY_REVIEW.md`): a decision-oriented synthesis with one AI choice kept, one corrected (a diagram label that contradicted its own ADR), the trade-offs, and a conditional recommendation.
+
+## 09_megashop_backend — L'Usine Logicielle Auditable (capstone)
+
+A payment backend for MegaShop-B2B built through three sprints run as a Product Owner → Developer → QA chain, with strict TDD, exact dependency pinning, secrets kept out of git, and Langfuse tracing of every LLM call and human decision.
+
+- **Task 0** (`.github/PO|DEV|QA-instructions.md`, `.gitignore`, `.env.example`): the three persona files, improved from project 06 (per-feature scope and a Definition of Done for the PO, red/green TDD and pinned versions for the Dev, dependency/TDD/secret audits for the QA); `.env` is git-ignored and only variable names are published.
+- **Task 1** (`server.js`, `Dockerfile`, `specifications.md`): an Express webhook that logs a bank payment notification and answers `200 OK` immediately. Tests were written first (verified red, then green). The QA audit found the container ran as root (`uid=0`) and fixed it (`USER node`, `uid=1000`).
+- **Task 2** (`worker.js`, `queue.js`, `docker-compose.yml`): the webhook now pushes to a Redis queue and a separate Worker consumes it and runs an LLM analysis traced with `observeOpenAI`. The QA reproduced the crash when Redis is not ready at startup, and fixed it with a retry loop plus a Redis healthcheck and `depends_on: condition: service_healthy`.
+- **Task 3** (`worker.js`, `docker-compose.yml`): a Human-in-the-Loop Pre-Hook — a refund (`status: "refund"`) suspends the Worker until an operator answers `o`/`n` in the terminal (`readline/promises`, `stdin_open` + `tty` in Compose). The decision is scored in Langfuse (`1` authorized, `0` refused) on the same trace as the analysis.
+- **Task 4** (`FINOPS_REVIEW.md`, `langfuse_*_export.*`): FinOps closing review — measured LLM cost, and exports of traces and scores that let each refund decision be traced back to its LLM call.
+
+**Run it**: copy `.env.example` to `.env` and fill in the keys, then `docker compose up -d redis app`. HITL needs an attached terminal: `docker compose run --rm worker` (a detached `up -d` cannot take keyboard input). Tests: `npm test`.
+
+**See `PROOF.md`** (terminal transcripts, Langfuse screenshots, API verification), **`QA_REPORT.md`** (each audit finding as fault / risk / fix, with non-regression evidence) and **`FINOPS_REVIEW.md`** (cost review).
+
 ## Concepts covered
 
-Tokenization & LLM economics · Intent-Driven Development & semantic debt · Context window & Lost in the Middle · FIM & RAG local · R-C-T-C-F prompting · PRRF specialized agents · Company Skills standardization · External memory (MEMORY.md) · Model Context Protocol (Resources/Prompts/Tools) · Human-in-the-Loop · Zero Trust tool security · autonomous agent orchestration · LLM observability & tracing · FinOps/tokenomics · Pre-Hook/Post-Hook governance.
+Tokenization & LLM economics · Intent-Driven Development & semantic debt · Context window & Lost in the Middle · FIM & RAG local · R-C-T-C-F prompting · PRRF specialized agents · Company Skills standardization · External memory (MEMORY.md) · Model Context Protocol (Resources/Prompts/Tools) · Human-in-the-Loop · Zero Trust tool security · autonomous agent orchestration · LLM observability & tracing · FinOps/tokenomics · Pre-Hook/Post-Hook governance · TCO/ROI · Architecture Decision Records · TDD (red/green) · dependency pinning · message queue / async worker · startup resilience (retry + healthcheck).
 
 ## Status
 
-All 7 projects complete, manual QA review requested.
+All 9 projects complete, manual QA review requested.
