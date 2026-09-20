@@ -102,7 +102,7 @@ _Section rédigée après implémentation (l'énoncé du Sprint 3 ne prévoyait 
 - **Réponse autre que `o` ou `n`** : non précisé. Décision : par prudence, toute réponse différente de `o` (casse et espaces ignorés) annule l'action.
 - **Ce que signifie "appliquer le statut"** : aucune base de données n'existe à ce stade (la persistance est hors scope depuis le Sprint 2). Décision : l'application du statut est tracée en console, pas stockée durablement.
 - **Ordre analyse / confirmation** : l'analyse IA s'exécute toujours en premier et informe l'opérateur ; elle ne décide jamais à sa place.
-- **Hors scope, assumé** : identification de l'opérateur qui répond (on ne sait pas *qui* a validé), délai maximal d'attente d'une réponse, et traitement en parallèle. Le Worker étant séquentiel, les notifications suivantes attendent en file pendant qu'une confirmation est en cours.
+- **Hors scope, assumé** : délai maximal d'attente d'une réponse, et traitement en parallèle. (L'identification de l'opérateur, d'abord hors scope, a été ajoutée ensuite : voir le complément « Traçabilité de l'opérateur ».) Le Worker étant séquentiel, les notifications suivantes attendent en file pendant qu'une confirmation est en cours.
 
 ## Definition of Done
 
@@ -110,3 +110,45 @@ _Section rédigée après implémentation (l'énoncé du Sprint 3 ne prévoyait 
 - `o` applique le statut et enregistre un score de succès ; `n` annule et enregistre un score d'échec, chacun rattaché à la trace de l'analyse.
 - La saisie fonctionne dans un conteneur Docker.
 - Chaque critère est couvert par un test automatisé écrit avant l'implémentation (TDD), dans la mesure où il est testable sans appel LLM facturé ni terminal réel ; le prompt interactif et le score Langfuse réels sont vérifiés manuellement (voir `PROOF.md`).
+
+## Complément Sprint 3 : Garde-fou budgétaire FinOps
+
+_Ajouté après relecture de la consigne globale du projet, qui demande des appels LLM « tracés, budgétés et évalués » (l'énoncé du Sprint 3 ne le demandait pas explicitement)._
+
+### User Story
+
+- En tant que responsable FinOps, je veux être alerté quand un appel LLM ou le cumul des appels dépasse un budget défini, afin de détecter une dérive de coût pendant l'exécution et pas seulement après coup.
+
+### Critères d'acceptation
+
+- **Given** une analyse dont la consommation reste sous les limites, **When** le Worker la termine, **Then** aucune alerte n'est émise et un score de succès est enregistré sur la trace de cette analyse.
+- **Given** une analyse dont la consommation dépasse la limite par appel, **When** le Worker la termine, **Then** une alerte FinOps est émise et un score d'échec est enregistré sur la même trace.
+- **Given** des analyses successives dont le cumul dépasse le budget total, **When** le budget est franchi, **Then** l'analyse qui le franchit déclenche l'alerte et le score d'échec.
+- **Given** un seuil absent ou invalide dans la configuration, **When** le Worker démarre, **Then** une valeur par défaut sûre est utilisée (jamais un budget nul qui alerterait en permanence).
+
+### Ambiguïtés identifiées et résolues
+
+- **Unité du budget** : le coût en dollars est calculé côté Langfuse, pas dans l'application. Décision : le budget est exprimé en **tokens** (`total_tokens` renvoyé par le fournisseur), sans tarif inventé dans le code.
+- **Valeurs par défaut** : 1 500 tokens par appel et 20 000 tokens cumulés par exécution du Worker, choisis à partir des mesures de `FINOPS_REVIEW.md` (analyses réelles entre 620 et 946 tokens). Un seuil de 150 tokens, comme au projet `07_langfuse`, alerterait à chaque appel.
+- **Effet d'un dépassement** : alerte et score uniquement, sans bloquer le traitement (comme un Post-Hook) ; le remboursement reste soumis à la validation humaine.
+- **Portée du cumul** : il repart de zéro à chaque démarrage du Worker (pas de persistance, hors scope).
+- **Configuration** : variables d'environnement `FINOPS_MAX_TOKENS_PER_CALL` et `FINOPS_TOKEN_BUDGET`.
+
+## Complément Sprint 3 : Traçabilité de l'opérateur
+
+_Ajouté après relecture du concept « Le Nouveau Rôle du Lead Engineer », qui fait du Lead « l'arbitre » qui « porte la responsabilité finale » des décisions critiques._
+
+### User Story
+
+- En tant qu'auditeur, je veux savoir **qui** a autorisé ou refusé chaque remboursement, afin que la décision puisse être attribuée à une personne responsable et pas seulement à un « humain » anonyme.
+
+### Critères d'acceptation
+
+- **Given** une décision humaine (autorisée ou refusée) sur un remboursement, **When** elle est enregistrée dans l'outil d'observabilité, **Then** le commentaire de la décision indique l'opérateur qui l'a prise.
+- **Given** aucune identité d'opérateur configurée, **When** une décision est enregistrée, **Then** elle porte la mention explicite « non-identifié » : le système n'invente jamais une identité.
+- **Given** une décision, **When** elle est tracée en console, **Then** l'opérateur y figure aussi.
+
+### Ambiguïtés identifiées et résolues
+
+- **Source de l'identité** : variable d'environnement `OPERATOR_NAME`. Le nom d'utilisateur du système n'est **pas** utilisé : dans le conteneur il vaut toujours `node`, ce qui attribuerait faussement la décision à un compte technique.
+- **Fiabilité** : l'identité est **déclarative** (l'opérateur indique son nom dans la configuration), elle n'est pas authentifiée. Une authentification réelle de l'opérateur reste hors scope.

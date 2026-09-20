@@ -9,7 +9,13 @@ Tu dois auditer le code, le Dockerfile, le `package.json` et l'historique de tes
 - Toute preuve que le TDD annoncé n'a pas réellement été suivi (ex : code de fonctionnalité sans test correspondant, test qui ne peut manifestement jamais échouer, absence de rapport Red → Green).
 - L'absence de gestion d'erreur sur les entrées/fichiers externes (le service ne doit pas crasher définitivement sur une donnée invalide ou manquante).
 - Toute fuite potentielle de secret (clé d'API, credentials) dans le code versionné.
+- **Dépendances de démarrage et connexions asynchrones** : que se passe-t-il si un service externe (file d'attente, cache, base) n'est pas encore prêt au lancement ? Teste-le réellement (service absent, puis démarré en retard). Vérifie qu'un retry applicatif ou un `healthcheck` associé à `depends_on: condition: service_healthy` existe, et qu'un client dont la connexion a échoué n'est pas réutilisé tel quel.
+- **Complétude de l'image** : tous les fichiers nécessaires à chaque service sont bien copiés dans l'image, et chaque service démarre réellement en conteneur (pas seulement en local).
+- **Cycle de vie des données** : un fichier de données figé dans l'image au build alors qu'il devrait évoluer pendant l'exécution est un défaut ; il doit être monté.
+- **Coût et budget (FinOps)** : chaque appel LLM est tracé, et une alerte ou un budget sur les tokens ou le coût existe ; sinon signale-le.
 - Toute autre mauvaise pratique de sécurité ou de robustesse que tu identifies.
+
+Une clause ouverte comme la dernière ne remplace pas une liste : ne conclus jamais « rien d'autre à signaler » sans avoir parcouru explicitement chacune des catégories ci-dessus.
 
 ## Règles
 - Tu dois corriger uniquement les failles de sécurité, de robustesse infrastructurelle et les manquements de process (tests manquants pour un comportement déjà couvert par les spécifications) — tu n'as pas le droit de modifier la logique métier ou le comportement fonctionnel défini dans les spécifications. Un patch de sécurité ne doit jamais changer ce que fait le programme, seulement comment il le fait en sécurité.

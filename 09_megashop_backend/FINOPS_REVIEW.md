@@ -29,8 +29,13 @@ automatisés), soit 11 traces. Un essai manuel interactif du Sprint 3,
 réalisé le 2026-09-20 (voir `PROOF.md`), a ajouté ensuite 2 traces
 d'analyse (`9dbf12ce…` : $0.0002205, `78d3bafc…` : $0.00020925) et 2 scores
 HITL (`1` et `0`) : +$0.00042975, soit un total projet de **$0.00142725**
-(13 traces), toujours négligeable. Ces 2 traces ne figurent pas dans les
-fichiers d'export ni sur les captures, qui restent cohérents entre eux.
+(13 traces), toujours négligeable. Deux traces supplémentaires ont été
+créées le même jour pour prouver le garde-fou budgétaire (`b7307595…` :
+$0.0001935, `c63f7724…` : $0.00015975), puis deux autres pour prouver
+l'identité de l'opérateur sur les décisions HITL (`8e4d4bb9…` :
+$0.00018675, `5c8f98d9…` : $0.0002175). Le total atteint **$0.00218475**
+pour **17 traces**. Ces traces ne figurent pas dans les fichiers d'export
+ni sur les captures, qui restent cohérents entre eux.
 
 ## Vérification visuelle dans le dashboard Langfuse
 
@@ -93,13 +98,37 @@ coût qui l'ont précédée.
 
 ## Conclusion FinOps
 
-Le coût réel de l'ensemble des tests (Sprints 1 à 3, y compris les
-sondes de debug) reste sous le millième de dollar — largement en dessous
-de tout seuil d'alerte FinOps raisonnable (le seuil de 150 tokens utilisé
-au projet `07_langfuse` aurait été dépassé sur zéro des appels ici, la
-consommation moyenne par transaction restant de l'ordre de 50 à 900
-tokens avec `gemini-3.6-flash`). À l'échelle de production, le coût par
-transaction analysée (~$0.00014 en moyenne) resterait négligeable même
-à plusieurs dizaines de milliers de transactions par mois — le poste de
-coût dominant d'un tel système reste l'infrastructure (Redis, conteneurs)
-et le temps humain de validation HITL, pas l'appel LLM lui-même.
+Le coût affiché par Langfuse pour l'ensemble des tests (Sprints 1 à 3,
+y compris les sondes de debug) est de l'ordre du millième de dollar :
+`$0.0009975` sur le périmètre du 18 septembre, `$0.00142725` avec l'essai
+manuel du 20. Par analyse aboutie, cela représente environ `$0.00016` (6
+analyses sur le périmètre du 18 septembre). À cette échelle, même
+plusieurs dizaines de milliers de transactions par mois resteraient un
+poste de coût modeste.
+
+### Limites de cette conclusion
+
+- **Consommation en tokens** : les vraies analyses consomment entre 620
+  et 946 tokens au total (`total_tokens`, relevé via l'API Langfuse) pour
+  seulement 53 à 55 tokens en entrée et 25 à 48 en sortie. La différence
+  (~570 tokens par appel) correspond très probablement aux tokens de
+  raisonnement du modèle. **8 générations sur 12 dépassent donc un seuil
+  de 150 tokens** comme celui du projet `07_langfuse` : un tel seuil
+  déclencherait une alerte sur chaque analyse réelle.
+- **Le coût affiché est peut-être sous-estimé** : Langfuse le calcule à
+  partir des tokens d'entrée et de sortie déclarés (les tarifs déduits
+  sont d'environ $0.75 par million en entrée et $3.75 par million en
+  sortie), sans compter ces tokens de raisonnement. S'ils sont facturés
+  par le fournisseur, le coût réel serait plus élevé que celui affiché.
+  Ce point n'est pas vérifié ici : il faudrait le confronter à la
+  facturation du fournisseur.
+- **Budget appliqué en temps réel depuis le 20 septembre** : le Worker
+  compare chaque analyse à un budget en tokens (1 500 par appel, 20 000
+  cumulés par exécution, configurables par `FINOPS_MAX_TOKENS_PER_CALL` et
+  `FINOPS_TOKEN_BUDGET`), émet une alerte console en cas de dépassement et
+  enregistre un score `finops_budget` (`1` respecté, `0` dépassé) sur la
+  trace de l'analyse. Ces seuils viennent des mesures ci-dessus : un seuil
+  de 150 tokens comme au projet `07_langfuse` alerterait à chaque appel.
+  Les tests du 18 septembre (et l'essai manuel du 20) ont été faits
+  **avant** ce garde-fou : la revue de ces traces reste rétrospective. Le
+  garde-fou lui-même est prouvé dans `PROOF.md`.

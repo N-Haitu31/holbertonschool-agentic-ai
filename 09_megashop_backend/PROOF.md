@@ -390,3 +390,129 @@ les deux décisions humaines enregistrées :
 Ces horodatages correspondent à ceux renvoyés par l'API
 (`09:20:12` et `09:20:49` UTC), et chaque score est rattaché à sa trace
 d'analyse par le `traceId` cité plus haut.
+
+## Complément — Garde-fou budgétaire FinOps (2026-09-20)
+
+Ajouté après relecture de la consigne globale (appels LLM « tracés,
+budgétés et évalués »). Voir `specifications.md`, section « Complément
+Sprint 3 ».
+
+### TDD — cycle Red → Green réel
+
+Tests écrits en premier dans `tests/worker.test.js` (7 tests dont 4 nouveaux
+pour le budget : dans le budget, dépassement par appel, dépassement
+cumulé, configuration vide ou invalide). Avant l'implémentation :
+
+```
+$ npm test
+not ok 7 - a non-refund transaction is analyzed but never triggers human confirmation
+not ok 8 - a refund transaction authorized by the human is applied and scored as success
+not ok 9 - a refund transaction refused by the human is cancelled and scored as failure
+not ok 10 - an analysis within budget is scored 1 on the trace of the analysis, with no alert
+not ok 11 - an analysis above the per-call token limit raises an alert and is scored 0
+  name: 'TypeError'
+```
+
+Après implémentation de `createBudgetTracker` et de la vérification dans
+`processTransaction` :
+
+```
+$ npm test
+# tests 13
+# pass 13
+# fail 0
+```
+
+### Test réel dans Docker — les deux issues
+
+Seuils par défaut (1 500 tokens par appel, 20 000 cumulés) : aucune
+alerte.
+
+```
+$ docker compose run -d --name budget-default worker   # après un POST tx_budget_ok
+[worker] processing transaction: { transactionId: 'tx_budget_ok', ... status: 'success' }
+[worker] AI analysis: Cette notification est **normale**, car l'ensemble des données (montant, devise, statut) est parfaitement cohérent et ne présente aucune anomalie.
+(aucune alerte FinOps)
+```
+
+Seuil abaissé volontairement à 100 tokens (`-e FINOPS_MAX_TOKENS_PER_CALL=100`) :
+
+```
+$ docker compose run -d --name budget-alert -e FINOPS_MAX_TOKENS_PER_CALL=100 worker   # après un POST tx_budget_alert
+[worker] AI analysis: Cette notification est **suspecte** car l'identifiant de transaction (`tx_budget_alert`) ressemble à un nom d'alerte système plutôt qu'à une référence de paiement réelle.
+[worker] ALERTE FINOPS : budget dépassé — 618 tokens sur un appel (limite 100)
+```
+
+### Scores Langfuse
+
+Vérifiés via l'API publique, chacun rattaché à la trace de son analyse :
+
+```
+$ curl -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" "$LANGFUSE_HOST/api/public/scores?name=finops_budget"
+2026-09-20T09:01:19.689Z | c63f7724-4480-4e2f-b7d8-e983aed31f83 = 1   (seuils par défaut)
+2026-09-20T09:00:41.478Z | b7307595-8fe7-4cd0-9527-993d1f2f38ac = 0   (seuil à 100 tokens)
+```
+
+Note : au premier passage, seul le score `0` apparaissait ; le score `1`
+est apparu quelques secondes plus tard (simple délai d'ingestion). Un
+premier essai du run par défaut n'avait aussi rien reçu : le webhook
+répondait `000` car l'application venait juste d'être démarrée ; le test a
+été rejoué une fois l'application prête.
+
+## Complément — Traçabilité de l'opérateur (2026-09-20)
+
+Ajouté après relecture du concept « Le Nouveau Rôle du Lead Engineer ».
+Voir `specifications.md`, section « Complément Sprint 3 : Traçabilité de
+l'opérateur ».
+
+### TDD — cycle Red → Green réel
+
+Trois tests ajoutés en premier (opérateur dans le commentaire d'un
+remboursement autorisé, d'un remboursement refusé, et résolution de
+`OPERATOR_NAME`). Avant l'implémentation :
+
+```
+$ npm test
+not ok 14 - an authorized refund records who validated it in the score comment
+not ok 15 - a refused refund also records who refused it in the score comment
+not ok 16 - the operator comes from OPERATOR_NAME, and is never guessed when it is missing
+# tests 16
+# pass 13
+# fail 3
+```
+
+Après implémentation de `resolveOperator` et du champ `comment` du score :
+
+```
+$ npm test
+# tests 16
+# pass 16
+# fail 0
+```
+
+Le SDK installé accepte bien `comment` sur un score (vérifié dans le schéma
+`ScoreBody` de `langfuse-core`, champ `comment?: string | null`).
+
+### Test réel dans Docker
+
+Deux notifications `status: "refund"`, réponses envoyées par pipe (pas de
+saisie au clavier pour ces deux runs). Run 1 avec `-e OPERATOR_NAME=haitu`,
+run 2 sans aucune variable :
+
+```
+[worker] Remboursement demandé pour la transaction tx_op_accept. Confirmer ? (o/n) : [worker] remboursement autorisé par l'humain (opérateur : haitu) pour tx_op_accept.
+[worker] order status updated: transactionId=tx_op_accept status=Remboursé
+
+[worker] Remboursement demandé pour la transaction tx_op_refuse. Confirmer ? (o/n) : [worker] remboursement refusé par l'humain (opérateur : non-identifié) pour tx_op_refuse — action annulée.
+```
+
+### Scores Langfuse (API publique)
+
+```
+2026-09-20T09:08:25.158Z | 8e4d4bb9-de50-45e0-bbaf-ecf5772d35fe | valeur 1 | commentaire : "autorisé par l'opérateur : haitu"
+2026-09-20T09:08:55.214Z | 5c8f98d9-88b8-47d5-9b79-964fdf5fec69 | valeur 0 | commentaire : "refusé par l'opérateur : non-identifié"
+```
+
+L'identité est déclarative (variable d'environnement), pas authentifiée ;
+sans configuration, la décision porte la mention `non-identifié` au lieu
+d'une identité inventée.

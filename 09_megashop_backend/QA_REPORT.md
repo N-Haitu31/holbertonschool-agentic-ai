@@ -132,3 +132,87 @@ Trace confirmée côté Langfuse via l'API publique (`GET /api/public/traces`) :
   $ docker compose exec worker id
   uid=1000(node) gid=1000(node) groups=1000(node),1000(node)
   ```
+
+---
+
+# Affinage des System Prompts (fin de projet)
+
+Les personas de la Task 0 n'avaient pas été modifiés depuis, alors que
+plusieurs erreurs réelles sont survenues en cours de projet. Chacune a été
+reportée dans l'instruction du rôle concerné (`.github/DEV-instructions.md`,
+`.github/QA-instructions.md`), après coup :
+
+| Erreur constatée | Rôle | Règle ajoutée |
+|---|---|---|
+| Le `Dockerfile` ne copiait que `server.js` : `Cannot find module './queue.js'` au démarrage du conteneur | Dev | Image Docker complète, à construire et démarrer réellement avant de conclure |
+| `{ stdin as input }` (syntaxe `import`) dans un fichier CommonJS : `SyntaxError` | Dev | Ne pas mélanger CommonJS et ESM, y compris en s'inspirant d'un exemple de l'autre système |
+| `npm install` oublié après ajout de dépendances : `Cannot find module 'dotenv'` en local | Dev | `npm install` après toute modification de `package.json` |
+| Crash au démarrage si Redis n'est pas prêt (`ConnectionTimeoutError`) | QA | Catégorie explicite « dépendances de démarrage et connexions asynchrones », à tester réellement, avec retry ou `healthcheck` + `depends_on` |
+| Image incomplète non détectée à l'audit | QA | Catégorie « complétude de l'image » |
+| Aucun budget sur les appels LLM avant la consigne globale | QA | Catégorie « coût et budget (FinOps) » |
+| Leçon du Projet 6 : une clause d'audit ouverte manque des catégories non citées | QA | Interdiction de conclure « rien à signaler » sans avoir parcouru chaque catégorie |
+
+Choix conservé du Projet 6 : le Dev ne reçoit **pas** la liste des failles de
+sécurité à éviter (root, résilience), pour que l'audit QA reste un vrai
+contrôle indépendant ; seules les erreurs **fonctionnelles** lui sont
+reportées.
+
+---
+
+# Revue du Lead Engineer
+
+Le concept « Le Nouveau Rôle du Lead Engineer » attribue trois
+responsabilités au Lead. Voici comment le projet y répond, et ce qui reste
+ouvert.
+
+## 1. Gardien du SSOT
+
+- Une spécification par sprint dans `specifications.md`, avec les
+  ambiguïtés tranchées et une Definition of Done.
+- Quand l'IA s'est trompée, la correction ne s'est pas limitée au code :
+  chaque erreur a été reportée dans l'instruction du rôle concerné (section
+  « Affinage des System Prompts » ci-dessus).
+- **Limite assumée** : trois compléments de spécification (Sprint 3,
+  budget FinOps, traçabilité de l'opérateur) ont été rédigés **après**
+  l'implémentation, et l'indiquent. Le Sprint 3 n'avait pas d'étape PO dans
+  l'énoncé ; les deux autres viennent de la relecture de la consigne globale
+  et du concept du Lead.
+
+## 2. FinOps et télémétrie
+
+- Chaque appel LLM est tracé dans Langfuse, avec un coût, et un garde-fou
+  budgétaire alerte et note chaque analyse (`finops_budget`).
+- Revue de clôture dans `FINOPS_REVIEW.md`, dont une erreur de conclusion
+  (seuil de tokens jugé jamais dépassé) a été corrigée après vérification
+  des tokens réels.
+- **Non couvert : la dérive du modèle (*model drift*).** Le projet ne
+  compare pas la consommation ou la qualité d'un même prompt dans le temps :
+  toutes les mesures tiennent sur quelques jours avec un seul modèle
+  (`gemini-3.6-flash`). Suivre la dérive demanderait un jeu de prompts de
+  référence rejoué régulièrement.
+- **Limites du budget** : il est exprimé en tokens, il repart de zéro à
+  chaque démarrage du Worker, et le coût affiché par Langfuse est peut-être
+  sous-estimé (tokens de raisonnement non comptés).
+
+## 3. Juge du Human-in-the-Loop
+
+- Pre-Hook sur les remboursements : le Worker est suspendu tant qu'un
+  humain n'a pas répondu, et toute réponse autre que `o` annule l'action.
+- La décision est scorée sur la trace de l'analyse, avec le nom de
+  l'opérateur (`OPERATOR_NAME`).
+- **Limites assumées** :
+  - l'identité de l'opérateur est **déclarative, pas authentifiée** : n'importe qui
+    peut écrire n'importe quel nom dans sa configuration ;
+  - un seul Worker séquentiel, sans délai maximal d'attente : une
+    confirmation en attente bloque les notifications suivantes ;
+  - il n'y a **pas de base de données** : l'application du statut
+    « Remboursé » est simulée par un message console, donc rien n'est
+    réellement modifié ni persisté.
+- **Conformité (RGPD, PCI-DSS) : non traitée par le code.** Le corps
+  complet de chaque notification est journalisé en console par le webhook
+  et envoyé tel quel au fournisseur du LLM (Gemini) et à Langfuse Cloud.
+  Les données de ce projet sont fictives ; en production, des données de
+  carte ne devraient jamais quitter le périmètre conforme (PCI-DSS) et des
+  données personnelles exigeraient une base légale et un accord avec chaque
+  sous-traitant (RGPD). Il faudrait ajouter une étape de masquage avant
+  l'appel LLM et avant la trace.
